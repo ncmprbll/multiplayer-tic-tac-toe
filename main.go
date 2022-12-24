@@ -15,6 +15,11 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.StripSlashes)
 
+	mimes := http.FileServer(http.Dir("web/"))
+
+	r.Handle("/css/*", mimes)
+	r.Handle("/js/*", mimes)
+
 	r.Get("/", api.RootHandler)
 	r.Post("/play", api.CreateGameHandler)
 	r.Get("/play", api.GetGameHandler)

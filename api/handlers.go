@@ -10,7 +10,7 @@ import (
 )
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "public/")
+	http.ServeFile(w, r, "web/")
 }
 
 func CreateGameHandler(w http.ResponseWriter, r *http.Request) {
@@ -59,5 +59,5 @@ func GetGameHandler(w http.ResponseWriter, r *http.Request) {
 		g.State = game.GAME_WAITING_FOR_X
 	}
 
-	http.ServeFile(w, r, "public/game.html")
+	http.ServeFile(w, r, "web/game.html")
 }

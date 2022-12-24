@@ -21,18 +21,7 @@ const (
 	GAME_OVER
 )
 
-// 0 - not set
-// 1 - x
-// 2 - o
-type Field struct {
-	state uint8
-}
-
-func (f Field) Set(value uint8) {
-	f.state = value
-}
-
-type Grid [3][3]Field
+type Grid [3][3]uint8
 
 type Game struct {
 	Id uuid.UUID
@@ -47,7 +36,7 @@ type Game struct {
 
 var Games = make(map[string]*Game)
 
-func (g Game) Place(x, y int, value uint8) error {
+func (g *Game) Place(x, y int, value uint8) error {
 	if x < 0 || x >= len(g.Grid) {
 		return errors.New("invalid x value for a grid")
 	}
@@ -56,13 +45,40 @@ func (g Game) Place(x, y int, value uint8) error {
 		return errors.New("invalid y value for a grid")
 	}
 
-	g.Grid[x][y].Set(value)
+	if g.Grid[x][y] != FIELD_NOT_SET {
+		return errors.New("invalid field")
+	}
 
-	message := types.Message {
+	if g.IsState(GAME_NOT_STARTED) || g.IsState(GAME_OVER) {
+		return errors.New("the game has not started or is over")
+	}
+
+	if value == FIELD_NOT_SET {
+		return errors.New("trying to unset a field")
+	}
+
+	isX := g.IsState(GAME_WAITING_FOR_X)
+	isO := g.IsState(GAME_WAITING_FOR_O)
+
+	if (isX && value != FIELD_X) || (isO && value != FIELD_O) {
+		return errors.New("invalid turn")
+	}
+
+	if isX {
+		g.State = GAME_WAITING_FOR_O
+	}
+
+	if isO {
+		g.State = GAME_WAITING_FOR_X
+	}
+
+	g.Grid[x][y] = value
+
+	message := types.Message{
 		"action": "move",
-		"x": x,
-		"y": y,
-		"value": value,
+		"x":      x,
+		"y":      y,
+		"value":  value,
 	}
 
 	g.Broadcast(message)
@@ -70,11 +86,20 @@ func (g Game) Place(x, y int, value uint8) error {
 	return nil
 }
 
-func (g Game) IsState(state uint8) bool {
+func (g *Game) IsState(state uint8) bool {
 	return g.State == state
 }
 
-func (g Game) Broadcast(msg types.Message) {
+func (g *Game) FullUpdate(c *websocket.Conn) error {
+	message := types.Message{
+		"action": "update",
+		"value":  g.Grid,
+	}
+
+	return c.WriteJSON(message)
+}
+
+func (g *Game) Broadcast(msg types.Message) {
 	for _, c := range g.Conns {
 		err := c.WriteJSON(msg)
 

@@ -55,5 +55,9 @@ func GetGameHandler(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, cookie)
 	}
 
+	if g.State == game.GAME_NOT_STARTED && g.X != uuid.Nil && g.O != uuid.Nil {
+		g.State = game.GAME_WAITING_FOR_X
+	}
+
 	http.ServeFile(w, r, "public/game.html")
 }

@@ -85,16 +85,24 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	g.FullUpdate(ws)
+
 	defer ws.Close()
 
 	g.Conns = append(g.Conns, ws)
+	readErrCount:= 0
 
 	for {
 		var msg types.Message
 
 		err := ws.ReadJSON(&msg)
 
+		if readErrCount > 512 {
+			return
+		}
+		
 		if err != nil {
+			readErrCount++
 			continue
 		}
 

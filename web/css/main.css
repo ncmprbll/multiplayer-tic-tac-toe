@@ -18,6 +18,32 @@ main.form {
     align-items: center;
 }
 
+main.container {
+    color: white;
+    display: grid;
+    grid-gap: 16px;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid {
+    display: grid;
+    grid-gap: 8px;
+    grid-template-columns: inherit;
+}
+
+.field {
+    background-color: rgb(152, 7, 160);
+}
+
+.player {
+    background-color: rgb(62, 3, 65);
+}
+
+.chat {
+    background-color: rgb(172, 160, 51);
+    grid-column: span 3;
+}
+
 input, select, textarea, button {
     font-family: inherit;
     color: inherit;
@@ -41,8 +67,8 @@ form>[type="submit"]:hover {
     background-color: #bb86fc;
 }
 
-button {
+/* button {
     width: 100px;
     height: 100px;
     color: #3b3b3b
-}
+} */

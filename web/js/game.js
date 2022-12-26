@@ -9,6 +9,10 @@ function XYTov(x, y) {
     return x + y * 3 + 1
 }
 
+const getCookieValue = (name) => (
+    document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || ''
+)
+
 if (id !== "") {
     socket = new WebSocket("ws://" + location.host + "/ws/" + id);
 
@@ -32,14 +36,32 @@ if (id !== "") {
                     button.innerText = "O";
                 }
             }
+        } else if (data.action == "state_update") {
+            const infobox = document.getElementById("infobox");
+            var text = "...";
+
+            switch (data.value) {
+                case 0:
+                    text = "Waiting";
+                    break;
+                case 1:
+                    text = "X's move";
+                    break;
+                case 2:
+                    text = "O's move";
+                    break;
+                case 3:
+                    text = "Game ended";
+                    break;
+                default:
+                    text = "Unknown state";
+            }
+
+            infobox.innerHTML = text;
         }
     });
 
-    const getCookieValue = (name) => (
-        document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || ''
-    )
-
-    function click(event) {
+    function click() {
         var {x, y} = vToXY(this.id)
 
         socket.send(JSON.stringify({player: getCookieValue("player-id"), action: "move", x: x, y: y}));

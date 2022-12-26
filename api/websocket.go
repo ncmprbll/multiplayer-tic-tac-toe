@@ -85,12 +85,14 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	g.Conns = append(g.Conns, ws)
+
 	g.FullUpdate(ws)
+	g.BroadcastState()
 
 	defer ws.Close()
 
-	g.Conns = append(g.Conns, ws)
-	readErrCount:= 0
+	readErrCount := 0
 
 	for {
 		var msg types.Message
@@ -100,7 +102,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		if readErrCount > 512 {
 			return
 		}
-		
+
 		if err != nil {
 			readErrCount++
 			continue

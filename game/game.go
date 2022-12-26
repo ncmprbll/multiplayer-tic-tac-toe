@@ -72,6 +72,8 @@ func (g *Game) Place(x, y int, value uint8) error {
 		g.State = GAME_WAITING_FOR_X
 	}
 
+	g.BroadcastState()
+
 	g.Grid[x][y] = value
 
 	message := types.Message{
@@ -103,10 +105,21 @@ func (g *Game) Broadcast(msg types.Message) {
 	for _, c := range g.Conns {
 		err := c.WriteJSON(msg)
 
+		// Does it make any sense though? I think I was planning on handling an error here somehow
+		// I'll keep it this way for the time being
 		if err != nil {
 			continue
 		}
 	}
+}
+
+func (g *Game) BroadcastState() {
+	message := types.Message{
+		"action": "state_update",
+		"value":  g.State,
+	}
+
+	g.Broadcast(message)
 }
 
 func NewGame() Game {

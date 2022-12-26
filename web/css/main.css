@@ -24,7 +24,7 @@ main.form {
     cursor: pointer;
     mix-blend-mode: screen;
     border: none;
-    padding: 0.5em;
+    padding: 0.25em;
     text-align: center;
     display: inline-block;
     font-size: 2em;
@@ -37,26 +37,30 @@ main.form {
 }
 
 main.container {
-    color: white;
+    display: grid;
+    justify-content: center;
+}
 
-
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.info {
+    background-color: #a55bff;
+    border-radius: 16px;
+    margin-top: 0.5em;
+    padding: 0.25em;
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
 }
 
 .grid {
     margin-top: 1em;
     display: grid;
     grid-gap: 8px;
-    grid-template-columns: repeat(3, 128px);
-    grid-template-rows: repeat(3, 128px);
+    grid-template-columns: repeat(3, minmax(109px, 1fr));
 }
 
 .field {
     border-radius: 16px;
-
+    aspect-ratio: 1;
     display: flex;
     justify-content: center;
     align-items: center;

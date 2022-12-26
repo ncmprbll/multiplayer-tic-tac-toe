@@ -10,7 +10,7 @@ function XYTov(x, y) {
 }
 
 if (id !== "") {
-    socket = new WebSocket("ws://localhost:1337/ws/" + id);
+    socket = new WebSocket("ws://" + location.host + "/ws/" + id);
 
     socket.addEventListener("message", function (event) {
         var data = JSON.parse(event.data);

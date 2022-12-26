@@ -18,38 +18,7 @@ main.form {
     align-items: center;
 }
 
-main.container {
-    color: white;
-    display: grid;
-    grid-gap: 16px;
-    grid-template-columns: repeat(3, 1fr);
-}
-
-.grid {
-    display: grid;
-    grid-gap: 8px;
-    grid-template-columns: inherit;
-}
-
-.field {
-    background-color: rgb(152, 7, 160);
-}
-
-.player {
-    background-color: rgb(62, 3, 65);
-}
-
-.chat {
-    background-color: rgb(172, 160, 51);
-    grid-column: span 3;
-}
-
-input, select, textarea, button {
-    font-family: inherit;
-    color: inherit;
-}
-
-form>[type="submit"] {
+.purple-button {
     background-color: #a55bff;
     border-radius: 32px;
     cursor: pointer;
@@ -63,8 +32,49 @@ form>[type="submit"] {
     transition: background-color 0.3s ease-out;
 }
 
-form>[type="submit"]:hover {
+.purple-button:hover {
     background-color: #bb86fc;
+}
+
+main.container {
+    color: white;
+
+
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.grid {
+    margin-top: 1em;
+    display: grid;
+    grid-gap: 8px;
+    grid-template-columns: repeat(3, 128px);
+    grid-template-rows: repeat(3, 128px);
+}
+
+.field {
+    border-radius: 16px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 4em;
+}
+
+.player {
+    background-color: rgb(62, 3, 65);
+}
+
+.chat {
+    background-color: rgb(172, 160, 51);
+    margin-top: 1em;
+}
+
+input, select, textarea, button {
+    font-family: inherit;
+    color: inherit;
 }
 
 /* button {

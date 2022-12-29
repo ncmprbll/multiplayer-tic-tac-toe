@@ -40,32 +40,33 @@ main.form {
 main.container {
     display: grid;
     justify-content: center;
-    height: calc(100% - 1em);
-    width: 30%;
+    height: calc(100% - 10px);
+    width: 35%;
     margin: 0 auto;
+    grid-template-rows: 4em minmax(350px, 1fr) 5fr 4em;
 }
 
 .info {
     background-color: #a55bff;
     border-radius: 16px;
-    margin-top: 0.5em;
+    margin-top: 10px;
     padding: 0.25em;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-size: 2em;
     font-weight: bold;
 }
 
 .grid {
-    margin-top: 1em;
+    margin-top: 10px;
     display: grid;
     grid-gap: 8px;
     grid-template-columns: repeat(3, minmax(109px, 0.5fr));
-
 }
 
 .field {
     border-radius: 16px;
-    aspect-ratio: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -78,11 +79,12 @@ main.container {
 
 .chat {
     background-color: #a55bffa2;
-    margin-top: 1em;
+    color: #b1abab;
+    margin-top: 10px;
     min-height: 200px;
     overflow-y: auto;
     padding: 0.5em;
-    border-radius: 16px;
+    border-radius: 16px 16px 0 0;
     scrollbar-color: black;
 }
 
@@ -102,13 +104,25 @@ main.container {
     width: 10px;
 }
 
+.message-writer {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 0.5em;
+}
+
+.message-writer>input {
+    flex: 1;
+    background-color: #8340d4a2;
+    color: #b1abab;
+    border-radius: 0 0 0 16px;
+}
+
+.message-writer>button {
+    border-radius: 0 0 16px 0;
+}
+
 input, select, textarea, button {
     font-family: inherit;
     color: inherit;
 }
-
-/* button {
-    width: 100px;
-    height: 100px;
-    color: #3b3b3b
-} */

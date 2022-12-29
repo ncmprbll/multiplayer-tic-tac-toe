@@ -70,4 +70,47 @@ if (id !== "") {
     for (var i = 1; i <= 9; i++) {
         document.getElementById(i).addEventListener("click", click);
     }
+
+    const textarea = document.getElementById("chat-textarea");
+    const send = document.getElementById("send");
+
+    function createMessage(sender, text, issystem) {
+        const chat = document.getElementById("chat");
+
+        const div = document.createElement("div");
+        div.classList.add("message");
+    
+        const date = document.createElement("span");
+        date.classList.add("message-date");
+
+        const s = document.createElement("span");
+        s.classList.add("message-sender");
+
+        const t = document.createElement("span");
+        t.classList.add("message-text");
+
+        date.innerHTML = "00:00:01";
+        s.innerHTML = sender;
+        t.innerHTML = text;
+
+        div.append(date, s, t);
+        chat.append(div);
+    }
+
+    function handler(event) {
+        if (event.type === "keypress" && event.key != "Enter") {
+            return;
+        }
+
+        const text = textarea.value.trim();
+
+        if (text != "") {
+            createMessage("N00b1337", text, false);
+
+            textarea.value = "";
+        }
+    }
+
+    textarea.addEventListener("keypress", handler);
+    send.addEventListener("click", handler);
 }

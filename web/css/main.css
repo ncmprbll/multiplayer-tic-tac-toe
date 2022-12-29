@@ -43,6 +43,7 @@ main.container {
     height: calc(100% - 10px);
     width: 35%;
     margin: 0 auto;
+    grid-template-columns: 343px;
     grid-template-rows: 4em minmax(350px, 1fr) 5fr 4em;
 }
 
@@ -125,4 +126,31 @@ main.container {
 input, select, textarea, button {
     font-family: inherit;
     color: inherit;
+}
+
+.message {
+
+}
+
+.message-date {
+    color: #7c7c7c;
+    font-size: 0.75em;
+    text-align: center;
+}
+
+.message-date::after {
+    content: " | ";
+}
+
+
+.message-sender {
+    font-weight: bold;
+}
+
+.message-sender::after {
+    content: ": ";
+}
+
+.message-text {
+    word-wrap: break-word
 }

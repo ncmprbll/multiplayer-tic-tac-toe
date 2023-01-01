@@ -102,7 +102,17 @@ func (g *Game) FullUpdate(c *websocket.Conn) error {
 		"value":  g.Grid,
 	}
 
-	return c.WriteJSON(message)
+	if err := c.WriteJSON(message); err != nil {
+		return err
+	}
+
+	for _, m := range g.ChatLog {
+		if err := c.WriteJSON(m); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (g *Game) Broadcast(msg types.Message) {
@@ -131,13 +141,25 @@ func (g *Game) SendChatMessage(player string, message string) {
 	formatted := strings.TrimSpace(message)
 	formatted = strings.Join(strings.Fields(formatted), " ")
 
+	// TODO: Come up with a decent name system
+	sender := "Player"
+
+	if player == g.X.String() {
+		sender = "X"
+	} else if player == g.O.String() {
+		sender = "O"
+	}
+
 	text := types.Message{
 		"action":    "chat",
 		"timestamp": time.Now().Format("15:04:05"),
 		"text":      formatted,
+		"sender":    sender,
+		"issystem":  false,
 	}
 
 	g.Broadcast(text)
+	g.ChatLog = append(g.ChatLog, text)
 }
 
 func NewGame() Game {

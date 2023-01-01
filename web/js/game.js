@@ -14,6 +14,29 @@ const getCookieValue = (name) => (
 )
 
 if (id !== "") {
+    function createMessage(sender, text, timestamp, issystem) {
+        const chat = document.getElementById("chat");
+
+        const div = document.createElement("div");
+        div.classList.add("message");
+    
+        const date = document.createElement("span");
+        date.classList.add("message-date");
+
+        const s = document.createElement("span");
+        s.classList.add("message-sender");
+
+        const t = document.createElement("span");
+        t.classList.add("message-text");
+
+        date.innerText = timestamp;
+        s.innerText = sender;
+        t.innerText = text;
+
+        div.append(date, s, t);
+        chat.append(div);
+    }
+
     socket = new WebSocket("ws://" + location.host + "/ws/" + id);
 
     socket.addEventListener("message", function (event) {
@@ -59,7 +82,7 @@ if (id !== "") {
 
             infobox.innerHTML = text;
         } else if (data.action == "chat") {
-            console.log(data);
+            createMessage(data.sender, data.text, data.timestamp, data.issystem);
         }
     });
 
@@ -76,29 +99,6 @@ if (id !== "") {
     const textarea = document.getElementById("chat-textarea");
     const send = document.getElementById("send");
 
-    function createMessage(sender, text, issystem) {
-        const chat = document.getElementById("chat");
-
-        const div = document.createElement("div");
-        div.classList.add("message");
-    
-        const date = document.createElement("span");
-        date.classList.add("message-date");
-
-        const s = document.createElement("span");
-        s.classList.add("message-sender");
-
-        const t = document.createElement("span");
-        t.classList.add("message-text");
-
-        date.innerText = "00:00:01";
-        s.innerText = sender;
-        t.innerText = text;
-
-        div.append(date, s, t);
-        chat.append(div);
-    }
-
     function handler(event) {
         if (event.type === "keypress" && event.key != "Enter") {
             return;
@@ -107,11 +107,7 @@ if (id !== "") {
         const text = textarea.value.trim();
 
         socket.send(JSON.stringify({player: getCookieValue("player-id"), action: "chat", text: text}));
-        // if (text != "") {
-        //    createMessage("N00b1337", text, false);
-
-        //    textarea.value = "";
-        // }
+        textarea.value = "";
     }
 
     textarea.addEventListener("keypress", handler);

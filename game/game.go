@@ -2,6 +2,8 @@ package game
 
 import (
 	"errors"
+	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -32,6 +34,8 @@ type Game struct {
 	Grid  Grid
 
 	Conns []*websocket.Conn
+
+	ChatLog []types.Message
 }
 
 var Games = make(map[string]*Game)
@@ -120,6 +124,20 @@ func (g *Game) BroadcastState() {
 	}
 
 	g.Broadcast(message)
+}
+
+func (g *Game) SendChatMessage(player string, message string) {
+	// Removing trailing and repeated spaces in case of a client-side bypass
+	formatted := strings.TrimSpace(message)
+	formatted = strings.Join(strings.Fields(formatted), " ")
+
+	text := types.Message{
+		"action":    "chat",
+		"timestamp": time.Now().Format("15:04:05"),
+		"text":      formatted,
+	}
+
+	g.Broadcast(text)
 }
 
 func NewGame() Game {

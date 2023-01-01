@@ -19,13 +19,13 @@ func processAction(msg types.Message, g *game.Game) error {
 		return errors.New("no action to process")
 	}
 
+	player, ok := msg["player"]
+
+	if !ok {
+		return errors.New("no player")
+	}
+
 	if action == "move" {
-		player, ok := msg["player"]
-
-		if !ok {
-			return errors.New("no player while making a move")
-		}
-
 		x, ok := msg["x"]
 
 		if !ok {
@@ -63,6 +63,14 @@ func processAction(msg types.Message, g *game.Game) error {
 		xInt, yInt := int(xVal), int(yVal)
 
 		g.Place(xInt, yInt, value)
+	} else if action == "chat" {
+		text, ok := msg["text"]
+
+		if !ok {
+			return errors.New("no text value")
+		}
+
+		g.SendChatMessage(player.(string), text.(string))
 	}
 
 	return nil

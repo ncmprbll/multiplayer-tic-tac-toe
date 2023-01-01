@@ -58,6 +58,8 @@ if (id !== "") {
             }
 
             infobox.innerHTML = text;
+        } else if (data.action == "chat") {
+            console.log(data);
         }
     });
 
@@ -89,9 +91,9 @@ if (id !== "") {
         const t = document.createElement("span");
         t.classList.add("message-text");
 
-        date.innerHTML = "00:00:01";
-        s.innerHTML = sender;
-        t.innerHTML = text;
+        date.innerText = "00:00:01";
+        s.innerText = sender;
+        t.innerText = text;
 
         div.append(date, s, t);
         chat.append(div);
@@ -104,11 +106,12 @@ if (id !== "") {
 
         const text = textarea.value.trim();
 
-        if (text != "") {
-            createMessage("N00b1337", text, false);
+        socket.send(JSON.stringify({player: getCookieValue("player-id"), action: "chat", text: text}));
+        // if (text != "") {
+        //    createMessage("N00b1337", text, false);
 
-            textarea.value = "";
-        }
+        //    textarea.value = "";
+        // }
     }
 
     textarea.addEventListener("keypress", handler);

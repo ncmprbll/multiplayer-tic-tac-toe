@@ -1,3 +1,8 @@
+const ACTION_MOVE = "move"
+const ACTION_UPDATE = "update"
+const ACTION_STATE_UPDATE = "state_update"
+const ACTION_CHAT = "chat"
+
 var id = window.location.href.split("/").pop() || ""
 var socket
 
@@ -33,7 +38,12 @@ if (id !== "") {
         s.innerText = sender;
         t.innerText = text;
 
-        div.append(date, s, t);
+        if (issystem) {
+            div.append(date, t);
+        } else {
+            div.append(date, s, t);
+        }
+
         chat.append(div);
     }
 
@@ -41,14 +51,14 @@ if (id !== "") {
 
     socket.addEventListener("message", function (event) {
         var data = JSON.parse(event.data);
-        if (data.action === "move") {
+        if (data.action === ACTION_MOVE) {
             const button = document.getElementById(XYTov(data.x, data.y));
             if (data.value == 1) {
                 button.innerText = "X";
             } else if (data.value == 2) {
                 button.innerText = "O";
             }
-        } else if (data.action == "update") {
+        } else if (data.action === ACTION_UPDATE) {
             for (var i = 1; i <= 9; i++) {
                 var {x, y} = vToXY(i)
                 const button = document.getElementById(i);
@@ -59,7 +69,7 @@ if (id !== "") {
                     button.innerText = "O";
                 }
             }
-        } else if (data.action == "state_update") {
+        } else if (data.action === ACTION_STATE_UPDATE) {
             const infobox = document.getElementById("infobox");
             var text = "...";
 
@@ -81,7 +91,7 @@ if (id !== "") {
             }
 
             infobox.innerHTML = text;
-        } else if (data.action == "chat") {
+        } else if (data.action === ACTION_CHAT) {
             createMessage(data.sender, data.text, data.timestamp, data.issystem);
         }
     });
@@ -89,7 +99,7 @@ if (id !== "") {
     function click() {
         var {x, y} = vToXY(this.id)
 
-        socket.send(JSON.stringify({player: getCookieValue("player-id"), action: "move", x: x, y: y}));
+        socket.send(JSON.stringify({player: getCookieValue("player-id"), action: ACTION_MOVE, x: x, y: y}));
     }
 
     for (var i = 1; i <= 9; i++) {
@@ -106,7 +116,10 @@ if (id !== "") {
 
         const text = textarea.value.trim();
 
-        socket.send(JSON.stringify({player: getCookieValue("player-id"), action: "chat", text: text}));
+        if (text != "") {
+            socket.send(JSON.stringify({player: getCookieValue("player-id"), action: ACTION_CHAT, text: text}));
+        }
+
         textarea.value = "";
     }
 

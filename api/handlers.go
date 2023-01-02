@@ -57,6 +57,7 @@ func GetGameHandler(w http.ResponseWriter, r *http.Request) {
 
 	if g.State == game.GAME_NOT_STARTED && g.X != uuid.Nil && g.O != uuid.Nil {
 		g.State = game.GAME_WAITING_FOR_X
+		g.SendSystemMessage("The game has begun")
 	}
 
 	http.ServeFile(w, r, "web/game.html")

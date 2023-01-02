@@ -95,7 +95,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 
 	g.Conns = append(g.Conns, ws)
 
-	g.FullUpdate(ws)
+	g.ConnectionUpdate(ws)
 	g.BroadcastState()
 
 	defer ws.Close()

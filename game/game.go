@@ -89,14 +89,49 @@ func (g *Game) Place(x, y int, value uint8) error {
 
 	g.Broadcast(message)
 
+	if g.isFinishingMove(x, y) {
+		g.State = GAME_OVER
+	}
+
+	g.BroadcastState()
+
 	return nil
+}
+
+func (g *Game) isFinishingMove(x, y int) bool {
+	value := g.Grid[x][y]
+
+	row := g.Grid[x]
+	rowLen := len(row)
+
+	for c, v := range row {
+		if v != value {
+			break
+		} else if c == rowLen-1 && v == value {
+			return true
+		}
+	}
+
+	colLen := len(g.Grid)
+
+	for c, r := range g.Grid {
+		if r[y] != value {
+			break
+		} else if c == colLen-1 && r[y] == value {
+			return true
+		}
+	}
+
+	// TODO: Diagonal win conditions
+
+	return false
 }
 
 func (g *Game) IsState(state uint8) bool {
 	return g.State == state
 }
 
-func (g *Game) FullUpdate(c *websocket.Conn) error {
+func (g *Game) ConnectionUpdate(c *websocket.Conn) error {
 	message := types.Message{
 		"action": "update",
 		"value":  g.Grid,
@@ -136,13 +171,16 @@ func (g *Game) BroadcastState() {
 	g.Broadcast(message)
 }
 
-func (g *Game) SendChatMessage(player string, message string) {
+func (g *Game) chatMessage(player string, message string, issystem bool) {
 	// Removing trailing and repeated spaces in case of a client-side bypass
-	formatted := strings.TrimSpace(message)
-	formatted = strings.Join(strings.Fields(formatted), " ")
+	formatted := strings.Join(strings.Fields(strings.TrimSpace(message)), " ")
+
+	if formatted == "" {
+		return
+	}
 
 	// TODO: Come up with a decent name system
-	sender := "Player"
+	sender := "System"
 
 	if player == g.X.String() {
 		sender = "X"
@@ -155,11 +193,19 @@ func (g *Game) SendChatMessage(player string, message string) {
 		"timestamp": time.Now().Format("15:04:05"),
 		"text":      formatted,
 		"sender":    sender,
-		"issystem":  false,
+		"issystem":  issystem,
 	}
 
 	g.Broadcast(text)
 	g.ChatLog = append(g.ChatLog, text)
+}
+
+func (g *Game) SendChatMessage(player string, message string) {
+	g.chatMessage(player, message, false)
+}
+
+func (g *Game) SendSystemMessage(message string) {
+	g.chatMessage("", message, true)
 }
 
 func NewGame() Game {

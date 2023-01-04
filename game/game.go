@@ -11,6 +11,14 @@ import (
 )
 
 const (
+	ACTION_MOVE = "move"
+	ACTION_UPDATE = "update"
+	ACTION_STATE_UPDATE = "state_update"
+	ACTION_CHAT = "chat"
+	ACTION_VICTORY = "victory"
+)
+
+const (
 	FIELD_NOT_SET uint8 = iota
 	FIELD_X
 	FIELD_O
@@ -79,7 +87,7 @@ func (g *Game) Place(x, y int, value uint8) error {
 	g.Grid[x][y] = value
 
 	message := types.Message{
-		"action": "move",
+		"action": ACTION_MOVE,
 		"x":      x,
 		"y":      y,
 		"value":  value,
@@ -93,7 +101,7 @@ func (g *Game) Place(x, y int, value uint8) error {
 		g.State = GAME_OVER
 
 		message := types.Message{
-			"action": "victory",
+			"action": ACTION_VICTORY,
 			"value":  pattern,
 		}
 
@@ -149,7 +157,7 @@ func (g *Game) IsState(state uint8) bool {
 
 func (g *Game) ConnectionUpdate(c *websocket.Conn) error {
 	message := types.Message{
-		"action": "update",
+		"action": ACTION_UPDATE,
 		"value":  g.Grid,
 	}
 
@@ -180,7 +188,7 @@ func (g *Game) Broadcast(msg types.Message) {
 
 func (g *Game) BroadcastState() {
 	message := types.Message{
-		"action": "state_update",
+		"action": ACTION_STATE_UPDATE,
 		"value":  g.State,
 	}
 
@@ -205,7 +213,7 @@ func (g *Game) chatMessage(player string, message string, issystem bool) {
 	}
 
 	text := types.Message{
-		"action":    "chat",
+		"action":    ACTION_CHAT,
 		"timestamp": time.Now().Format("15:04:05"),
 		"text":      formatted,
 		"sender":    sender,

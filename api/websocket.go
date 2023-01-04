@@ -25,7 +25,7 @@ func processAction(msg types.Message, g *game.Game) error {
 		return errors.New("no player")
 	}
 
-	if action == "move" {
+	if action == game.ACTION_MOVE {
 		x, ok := msg["x"]
 
 		if !ok {
@@ -63,7 +63,7 @@ func processAction(msg types.Message, g *game.Game) error {
 		xInt, yInt := int(xVal), int(yVal)
 
 		g.Place(xInt, yInt, value)
-	} else if action == "chat" {
+	} else if action == game.ACTION_CHAT {
 		text, ok := msg["text"]
 
 		if !ok {

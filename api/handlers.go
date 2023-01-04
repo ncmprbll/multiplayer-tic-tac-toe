@@ -22,9 +22,9 @@ func CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetGameHandler(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	gameid := chi.URLParam(r, "id")
 
-	g, ok := game.Games[id]
+	g, ok := game.Games[gameid]
 
 	if !ok {
 		http.Error(w, "Bad game ID", http.StatusNotFound)
@@ -41,11 +41,24 @@ func GetGameHandler(w http.ResponseWriter, r *http.Request) {
 	if (g.X == uuid.Nil || g.O == uuid.Nil) && pid != g.X.String() && pid != g.O.String() {
 		id := uuid.New()
 
+		whoami := ""
+
 		if g.X == uuid.Nil {
 			g.X = id
+
+			whoami = "X"
 		} else if g.O == uuid.Nil {
 			g.O = id
+
+			whoami = "O"
 		}
+
+		reflectionCookie := &http.Cookie{
+			Name: gameid + "_whoami",
+			Value: whoami,
+		}
+
+		http.SetCookie(w, reflectionCookie)
 
 		cookie := &http.Cookie{
 			Name:  "player-id",

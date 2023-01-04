@@ -1,11 +1,19 @@
-const ACTION_MOVE = "move"
-const ACTION_UPDATE = "update"
-const ACTION_STATE_UPDATE = "state_update"
-const ACTION_CHAT = "chat"
-const ACTION_VICTORY = "victory"
+const ACTION_MOVE = "move";
+const ACTION_UPDATE = "update";
+const ACTION_STATE_UPDATE = "state_update";
+const ACTION_CHAT = "chat";
+const ACTION_VICTORY = "victory";
+
+const FIELD_NOT_SET = 0;
+const FIELD_X = 1;
+const FIELD_O = 2;
+
+const GAME_NOT_STARTED = 0;
+const GAME_WAITING_FOR_X = 1;
+const GAME_WAITING_FOR_O = 2;
+const GAME_OVER = 3;
 
 var id = window.location.href.split("/").pop() || ""
-var socket
 
 function vToXY(v) {
     return {x: (v - 1) % 3, y: Math.floor((v - 1) / 3)}
@@ -48,15 +56,15 @@ if (id !== "") {
         chat.append(div);
     }
 
-    socket = new WebSocket("ws://" + location.host + "/ws/" + id);
+    var socket = new WebSocket("ws://" + location.host + "/ws/" + id);
 
     socket.addEventListener("message", function (event) {
         var data = JSON.parse(event.data);
         if (data.action === ACTION_MOVE) {
             const button = document.getElementById(XYTov(data.x, data.y));
-            if (data.value == 1) {
+            if (data.value == FIELD_X) {
                 button.innerText = "X";
-            } else if (data.value == 2) {
+            } else if (data.value == FIELD_O) {
                 button.innerText = "O";
             }
         } else if (data.action === ACTION_UPDATE) {
@@ -64,9 +72,9 @@ if (id !== "") {
                 var {x, y} = vToXY(i)
                 const button = document.getElementById(i);
 
-                if (data.value[x][y] == 1) {
+                if (data.value[x][y] == FIELD_X) {
                     button.innerText = "X";
-                } else if (data.value[x][y] == 2) {
+                } else if (data.value[x][y] == FIELD_O) {
                     button.innerText = "O";
                 }
             }
@@ -74,17 +82,33 @@ if (id !== "") {
             const infobox = document.getElementById("infobox");
             var text = "...";
 
+            const whoami = getCookieValue(id + "_whoami");
+
             switch (data.value) {
-                case 0:
+                case GAME_NOT_STARTED:
                     text = "Waiting";
                     break;
-                case 1:
-                    text = "X's move";
+                case GAME_WAITING_FOR_X:
+                    if (whoami == "X") {
+                        text = "Your move";
+                    } else if (whoami == "O") {
+                        text = "Opponent's move"
+                    } else {
+                        text = "X's move"
+                    }
+
                     break;
-                case 2:
-                    text = "O's move";
+                case GAME_WAITING_FOR_O:
+                    if (whoami == "X") {
+                        text = "Opponent's move";
+                    } else if (whoami == "O") {
+                        text = "Your move"
+                    } else {
+                        text = "O's move"
+                    }
+
                     break;
-                case 3:
+                case GAME_OVER:
                     text = "Game ended";
                     break;
                 default:

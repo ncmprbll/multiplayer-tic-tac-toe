@@ -32,7 +32,7 @@ func GetGameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pid := ""
-	cookie, err := r.Cookie("player-id")
+	cookie, err := r.Cookie(gameid + "_id")
 
 	if err == nil {
 		pid = cookie.Value
@@ -61,7 +61,7 @@ func GetGameHandler(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, reflectionCookie)
 
 		cookie := &http.Cookie{
-			Name:  "player-id",
+			Name:  gameid + "_id",
 			Value: id.String(),
 		}
 

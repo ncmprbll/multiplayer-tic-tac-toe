@@ -131,7 +131,7 @@ if (id !== "") {
     function click() {
         var {x, y} = vToXY(this.id)
 
-        socket.send(JSON.stringify({player: getCookieValue("player-id"), action: ACTION_MOVE, x: x, y: y}));
+        socket.send(JSON.stringify({player: getCookieValue(id + "_id"), action: ACTION_MOVE, x: x, y: y}));
     }
 
     for (var i = 1; i <= 9; i++) {
@@ -149,7 +149,7 @@ if (id !== "") {
         const text = textarea.value.trim();
 
         if (text != "") {
-            socket.send(JSON.stringify({player: getCookieValue("player-id"), action: ACTION_CHAT, text: text}));
+            socket.send(JSON.stringify({player: getCookieValue(id + "_id"), action: ACTION_CHAT, text: text}));
         }
 
         textarea.value = "";

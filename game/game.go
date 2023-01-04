@@ -76,8 +76,6 @@ func (g *Game) Place(x, y int, value uint8) error {
 		g.State = GAME_WAITING_FOR_X
 	}
 
-	g.BroadcastState()
-
 	g.Grid[x][y] = value
 
 	message := types.Message{
@@ -89,8 +87,18 @@ func (g *Game) Place(x, y int, value uint8) error {
 
 	g.Broadcast(message)
 
-	if g.isFinishingMove(x, y) {
+	finished, pattern := g.isFinishingMove(x, y)
+
+	if finished {
 		g.State = GAME_OVER
+
+		message := types.Message{
+			"action": "victory",
+			"value":  pattern,
+		}
+
+		g.Broadcast(message)
+		g.SendSystemMessage("The match is over")
 	}
 
 	g.BroadcastState()
@@ -98,7 +106,7 @@ func (g *Game) Place(x, y int, value uint8) error {
 	return nil
 }
 
-func (g *Game) isFinishingMove(x, y int) bool {
+func (g *Game) isFinishingMove(x, y int) (bool, [][]int) {
 	value := g.Grid[x][y]
 
 	row := g.Grid[x]
@@ -108,7 +116,7 @@ func (g *Game) isFinishingMove(x, y int) bool {
 		if v != value {
 			break
 		} else if c == rowLen-1 && v == value {
-			return true
+			return true, [][]int{{x, 0}, {x, 1}, {x, 2}}
 		}
 	}
 
@@ -118,13 +126,21 @@ func (g *Game) isFinishingMove(x, y int) bool {
 		if r[y] != value {
 			break
 		} else if c == colLen-1 && r[y] == value {
-			return true
+			return true, [][]int{{0, y}, {1, y}, {2, y}}
 		}
 	}
 
-	// TODO: Diagonal win conditions
+	if g.Grid[1][1] != value {
+		return false, nil
+	}
 
-	return false
+	if g.Grid[0][0] == value && g.Grid[2][2] == value {
+		return true, [][]int{{0, 0}, {1, 1}, {2, 2}}
+	} else if g.Grid[0][2] == value && g.Grid[2][0] == value {
+		return true, [][]int{{0, 2}, {1, 1}, {2, 0}}
+	}
+
+	return false, nil
 }
 
 func (g *Game) IsState(state uint8) bool {

@@ -2,6 +2,7 @@ const ACTION_MOVE = "move"
 const ACTION_UPDATE = "update"
 const ACTION_STATE_UPDATE = "state_update"
 const ACTION_CHAT = "chat"
+const ACTION_VICTORY = "victory"
 
 var id = window.location.href.split("/").pop() || ""
 var socket
@@ -93,6 +94,13 @@ if (id !== "") {
             infobox.innerHTML = text;
         } else if (data.action === ACTION_CHAT) {
             createMessage(data.sender, data.text, data.timestamp, data.issystem);
+        } else if (data.action === ACTION_VICTORY) {
+            for (const i in data.value) {
+                const field = data.value[i];
+                const button = document.getElementById(XYTov(field[0], field[1]));
+
+                button.style.backgroundColor = "#5566cd";
+            }
         }
     });
 

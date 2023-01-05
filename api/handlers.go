@@ -56,15 +56,17 @@ func GetGameHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		reflectionCookie := &http.Cookie{
-			Name: gameid + "_whoami",
-			Value: whoami,
+			Name:   gameid + "_whoami",
+			Value:  whoami,
+			MaxAge: 3600,
 		}
 
 		http.SetCookie(w, reflectionCookie)
 
 		cookie := &http.Cookie{
-			Name:  gameid + "_id",
-			Value: id.String(),
+			Name:   gameid + "_id",
+			Value:  id.String(),
+			MaxAge: 3600,
 		}
 
 		http.SetCookie(w, cookie)

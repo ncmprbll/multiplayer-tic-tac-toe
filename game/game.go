@@ -15,7 +15,8 @@ const (
 	ACTION_UPDATE       = "update"
 	ACTION_STATE_UPDATE = "state_update"
 	ACTION_CHAT         = "chat"
-	ACTION_VICTORY      = "victory"
+	ACTION_SWITCH       = "switch"
+	ACTION_ROUND_END    = "round_end"
 )
 
 const (
@@ -28,6 +29,7 @@ const (
 	GAME_NOT_STARTED uint8 = iota
 	GAME_WAITING_FOR_X
 	GAME_WAITING_FOR_O
+	GAME_ROUND_END
 	GAME_OVER
 )
 
@@ -64,7 +66,7 @@ func (g *Game) Place(x, y int, value uint8) error {
 		return errors.New("invalid field")
 	}
 
-	if g.IsState(GAME_NOT_STARTED) || g.IsState(GAME_OVER) {
+	if g.IsState(GAME_NOT_STARTED) || g.IsState(GAME_ROUND_END) || g.IsState(GAME_OVER) {
 		return errors.New("the game has not started or is over")
 	}
 
@@ -101,15 +103,22 @@ func (g *Game) Place(x, y int, value uint8) error {
 	finished, pattern := g.isFinishingMove(x, y)
 
 	if finished {
-		g.State = GAME_OVER
+		g.State = GAME_ROUND_END
 
 		message := types.Message{
-			"action": ACTION_VICTORY,
+			"action": ACTION_ROUND_END,
 			"value":  pattern,
 		}
 
 		g.Broadcast(message)
-		g.SendSystemMessage("The match is over")
+		g.SendSystemMessage("The match is over, switching sides...")
+
+		timer := time.NewTimer(2 * time.Second)
+
+		go func() {
+			<-timer.C
+			g.SwitchSides()
+		}()
 	}
 
 	g.BroadcastState()
@@ -123,6 +132,7 @@ func (g *Game) isFinishingMove(x, y int) (bool, [][]int) {
 	row := g.Grid[x]
 	rowLen := len(row)
 
+	// Row victory
 	for c, v := range row {
 		if v != value {
 			break
@@ -133,6 +143,7 @@ func (g *Game) isFinishingMove(x, y int) (bool, [][]int) {
 
 	colLen := len(g.Grid)
 
+	// Column victory
 	for c, r := range g.Grid {
 		if r[y] != value {
 			break
@@ -141,17 +152,25 @@ func (g *Game) isFinishingMove(x, y int) (bool, [][]int) {
 		}
 	}
 
-	if g.Grid[1][1] != value {
-		return false, nil
+	// Diagonal victory
+	if g.Grid[1][1] == value {
+		if g.Grid[0][0] == value && g.Grid[2][2] == value {
+			return true, [][]int{{0, 0}, {1, 1}, {2, 2}}
+		} else if g.Grid[0][2] == value && g.Grid[2][0] == value {
+			return true, [][]int{{0, 2}, {1, 1}, {2, 0}}
+		}
 	}
 
-	if g.Grid[0][0] == value && g.Grid[2][2] == value {
-		return true, [][]int{{0, 0}, {1, 1}, {2, 2}}
-	} else if g.Grid[0][2] == value && g.Grid[2][0] == value {
-		return true, [][]int{{0, 2}, {1, 1}, {2, 0}}
+	for _, r := range g.Grid {
+		for _, v := range r {
+			if v == FIELD_NOT_SET {
+				return false, nil
+			}
+		}
 	}
 
-	return false, nil
+	// Round draw
+	return true, nil
 }
 
 func (g *Game) IsState(state uint8) bool {
@@ -187,6 +206,30 @@ func (g *Game) Broadcast(msg types.Message) {
 			continue
 		}
 	}
+}
+
+func (g *Game) SwitchSides() {
+	g.Grid = *new(Grid)
+
+	gridupdate := types.Message{
+		"action": ACTION_UPDATE,
+		"value":  g.Grid,
+	}
+
+	switchsides := types.Message{
+		"action": ACTION_SWITCH,
+	}
+
+	t := g.X
+
+	g.X = g.O
+	g.O = t
+
+	g.State = GAME_WAITING_FOR_X
+
+	g.Broadcast(gridupdate)
+	g.Broadcast(switchsides)
+	g.BroadcastState()
 }
 
 func (g *Game) BroadcastState() {

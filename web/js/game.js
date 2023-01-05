@@ -5,7 +5,8 @@ if (id !== "") {
     const ACTION_UPDATE = "update";
     const ACTION_STATE_UPDATE = "state_update";
     const ACTION_CHAT = "chat";
-    const ACTION_VICTORY = "victory";
+    const ACTION_SWITCH = "switch";
+    const ACTION_ROUND_END = "round_end";
 
     const FIELD_NOT_SET = 0;
     const FIELD_X = 1;
@@ -14,7 +15,8 @@ if (id !== "") {
     const GAME_NOT_STARTED = 0;
     const GAME_WAITING_FOR_X = 1;
     const GAME_WAITING_FOR_O = 2;
-    const GAME_OVER = 3;
+    const GAME_ROUND_END = 3;
+    const GAME_OVER = 4;
 
     function vToXY(v) {
         return {x: (v - 1) % 3, y: Math.floor((v - 1) / 3)}
@@ -76,7 +78,11 @@ if (id !== "") {
                     button.innerText = "X";
                 } else if (data.value[x][y] === FIELD_O) {
                     button.innerText = "O";
+                } else if (data.value[x][y] === FIELD_NOT_SET) {
+                    button.innerText = "";
                 }
+
+                button.style.backgroundColor = null;
             }
         } else if (data.action === ACTION_STATE_UPDATE) {
             const infobox = document.getElementById("infobox");
@@ -108,6 +114,9 @@ if (id !== "") {
                     }
 
                     break;
+                case GAME_ROUND_END:
+                    text = "Round is over";
+                    break;  
                 case GAME_OVER:
                     text = "Game ended";
                     break;
@@ -118,7 +127,15 @@ if (id !== "") {
             infobox.innerHTML = text;
         } else if (data.action === ACTION_CHAT) {
             createMessage(data.sender, data.text, data.timestamp, data.issystem);
-        } else if (data.action === ACTION_VICTORY) {
+        } else if (data.action === ACTION_SWITCH) {
+            const whoami = getGameCookieValue("whoami");
+
+            if (whoami === "X") {
+                document.cookie = id + "_whoami=O"
+            } else if (whoami === "O") {
+                document.cookie = id + "_whoami=X"
+            }
+        } else if (data.action === ACTION_ROUND_END) {
             for (const i in data.value) {
                 const field = data.value[i];
                 const button = document.getElementById(XYTov(field[0], field[1]));

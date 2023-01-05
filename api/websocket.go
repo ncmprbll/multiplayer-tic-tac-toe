@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
 	"errors"
@@ -92,6 +93,46 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
+
+	player := r.URL.Query().Get("id")
+
+	if player == g.X.String() && !g.XAlive {
+		g.XAlive = true
+		g.SendSystemMessage("X has reconnected")
+	} else if player == g.O.String() && !g.OAlive {
+		g.OAlive = true
+		g.SendSystemMessage("O has reconnected")
+	}
+
+	ws.SetCloseHandler(func(code int, text string) error {
+		if g.IsState(game.GAME_OVER) {
+			return nil
+		}
+
+		if g.IsState(game.GAME_NOT_STARTED) {
+			g.X = uuid.Nil
+			g.XAlive = false
+			g.O = uuid.Nil
+			g.OAlive = false
+
+			return nil
+		}
+
+		if player == g.X.String() {
+			g.XAlive = false
+			g.SendSystemMessage("X has disconnected")
+		} else if player == g.O.String() {
+			g.OAlive = false
+			g.SendSystemMessage("O has disconnected")
+		}
+
+		if !g.XAlive && !g.OAlive {
+			g.SendSystemMessage("No players left, deleting the game...")
+			g.Over()
+		}
+
+		return nil
+	})
 
 	g.Conns = append(g.Conns, ws)
 

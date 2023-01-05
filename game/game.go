@@ -11,11 +11,11 @@ import (
 )
 
 const (
-	ACTION_MOVE = "move"
-	ACTION_UPDATE = "update"
+	ACTION_MOVE         = "move"
+	ACTION_UPDATE       = "update"
 	ACTION_STATE_UPDATE = "state_update"
-	ACTION_CHAT = "chat"
-	ACTION_VICTORY = "victory"
+	ACTION_CHAT         = "chat"
+	ACTION_VICTORY      = "victory"
 )
 
 const (
@@ -37,6 +37,9 @@ type Game struct {
 	Id uuid.UUID
 	X  uuid.UUID
 	O  uuid.UUID
+
+	XAlive bool
+	OAlive bool
 
 	State uint8
 	Grid  Grid
@@ -193,6 +196,17 @@ func (g *Game) BroadcastState() {
 	}
 
 	g.Broadcast(message)
+}
+
+func (g *Game) Over() {
+	g.State = GAME_OVER
+	g.BroadcastState()
+
+	for _, c := range g.Conns {
+		c.Close()
+	}
+
+	delete(Games, g.Id.String())
 }
 
 func (g *Game) chatMessage(player string, message string, issystem bool) {

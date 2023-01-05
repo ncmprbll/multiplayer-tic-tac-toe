@@ -45,10 +45,12 @@ func GetGameHandler(w http.ResponseWriter, r *http.Request) {
 
 		if g.X == uuid.Nil {
 			g.X = id
+			g.XAlive = true
 
 			whoami = "X"
 		} else if g.O == uuid.Nil {
 			g.O = id
+			g.OAlive = true
 
 			whoami = "O"
 		}

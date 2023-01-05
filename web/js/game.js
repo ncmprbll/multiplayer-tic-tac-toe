@@ -1,33 +1,35 @@
-const ACTION_MOVE = "move";
-const ACTION_UPDATE = "update";
-const ACTION_STATE_UPDATE = "state_update";
-const ACTION_CHAT = "chat";
-const ACTION_VICTORY = "victory";
-
-const FIELD_NOT_SET = 0;
-const FIELD_X = 1;
-const FIELD_O = 2;
-
-const GAME_NOT_STARTED = 0;
-const GAME_WAITING_FOR_X = 1;
-const GAME_WAITING_FOR_O = 2;
-const GAME_OVER = 3;
-
 var id = window.location.href.split("/").pop() || ""
 
-function vToXY(v) {
-    return {x: (v - 1) % 3, y: Math.floor((v - 1) / 3)}
-}
-
-function XYTov(x, y) {
-    return x + y * 3 + 1
-}
-
-const getCookieValue = (name) => (
-    document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || ''
-)
-
 if (id !== "") {
+    const ACTION_MOVE = "move";
+    const ACTION_UPDATE = "update";
+    const ACTION_STATE_UPDATE = "state_update";
+    const ACTION_CHAT = "chat";
+    const ACTION_VICTORY = "victory";
+
+    const FIELD_NOT_SET = 0;
+    const FIELD_X = 1;
+    const FIELD_O = 2;
+
+    const GAME_NOT_STARTED = 0;
+    const GAME_WAITING_FOR_X = 1;
+    const GAME_WAITING_FOR_O = 2;
+    const GAME_OVER = 3;
+
+    function vToXY(v) {
+        return {x: (v - 1) % 3, y: Math.floor((v - 1) / 3)}
+    }
+
+    function XYTov(x, y) {
+        return x + y * 3 + 1
+    }
+
+    const getGameCookieValue = (name) => (
+        document.cookie.match('(^|;)\\s*' + id + "_" + name + '\\s*=\\s*([^;]+)')?.pop() || ''
+    )
+
+    var socket = new WebSocket("ws://" + location.host + "/ws/" + id + "/?id=" + getGameCookieValue("id"));
+
     function createMessage(sender, text, timestamp, issystem) {
         const chat = document.getElementById("chat");
 
@@ -56,8 +58,6 @@ if (id !== "") {
         chat.append(div);
     }
 
-    var socket = new WebSocket("ws://" + location.host + "/ws/" + id);
-
     socket.addEventListener("message", function (event) {
         var data = JSON.parse(event.data);
         if (data.action === ACTION_MOVE) {
@@ -72,9 +72,9 @@ if (id !== "") {
                 var {x, y} = vToXY(i)
                 const button = document.getElementById(i);
 
-                if (data.value[x][y] == FIELD_X) {
+                if (data.value[x][y] === FIELD_X) {
                     button.innerText = "X";
-                } else if (data.value[x][y] == FIELD_O) {
+                } else if (data.value[x][y] === FIELD_O) {
                     button.innerText = "O";
                 }
             }
@@ -82,14 +82,14 @@ if (id !== "") {
             const infobox = document.getElementById("infobox");
             var text = "...";
 
-            const whoami = getCookieValue(id + "_whoami");
+            const whoami = getGameCookieValue("whoami");
 
             switch (data.value) {
                 case GAME_NOT_STARTED:
                     text = "Waiting";
                     break;
                 case GAME_WAITING_FOR_X:
-                    if (whoami == "X") {
+                    if (whoami === "X") {
                         text = "Your move";
                     } else if (whoami == "O") {
                         text = "Opponent's move"
@@ -99,7 +99,7 @@ if (id !== "") {
 
                     break;
                 case GAME_WAITING_FOR_O:
-                    if (whoami == "X") {
+                    if (whoami === "X") {
                         text = "Opponent's move";
                     } else if (whoami == "O") {
                         text = "Your move"
@@ -131,7 +131,7 @@ if (id !== "") {
     function click() {
         var {x, y} = vToXY(this.id)
 
-        socket.send(JSON.stringify({player: getCookieValue(id + "_id"), action: ACTION_MOVE, x: x, y: y}));
+        socket.send(JSON.stringify({player: getGameCookieValue("id"), action: ACTION_MOVE, x: x, y: y}));
     }
 
     for (var i = 1; i <= 9; i++) {
@@ -142,14 +142,14 @@ if (id !== "") {
     const send = document.getElementById("send");
 
     function handler(event) {
-        if (event.type === "keypress" && event.key != "Enter") {
+        if (event.type === "keypress" && event.key !== "Enter") {
             return;
         }
 
         const text = textarea.value.trim();
 
-        if (text != "") {
-            socket.send(JSON.stringify({player: getCookieValue(id + "_id"), action: ACTION_CHAT, text: text}));
+        if (text !== "") {
+            socket.send(JSON.stringify({player: getGameCookieValue("id"), action: ACTION_CHAT, text: text}));
         }
 
         textarea.value = "";

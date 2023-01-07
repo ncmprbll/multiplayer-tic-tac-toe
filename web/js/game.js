@@ -152,7 +152,9 @@ if (id !== "") {
     }
 
     for (var i = 1; i <= 9; i++) {
-        document.getElementById(i).addEventListener("click", click);
+        const b = document.getElementById(i);
+        b.addEventListener("click", click);
+        b.addEventListener("touchend", click);
     }
 
     const textarea = document.getElementById("chat-textarea");
@@ -174,4 +176,5 @@ if (id !== "") {
 
     textarea.addEventListener("keypress", handler);
     send.addEventListener("click", handler);
+    send.addEventListener("touchend", handler);
 }

@@ -113,7 +113,7 @@ func (g *Game) Place(x, y int, value uint8) error {
 		g.Broadcast(message)
 		g.SendSystemMessage("The match is over, switching sides...")
 
-		timer := time.NewTimer(2 * time.Second)
+		timer := time.NewTimer(3 * time.Second)
 
 		go func() {
 			<-timer.C
@@ -267,6 +267,8 @@ func (g *Game) chatMessage(player string, message string, issystem bool) {
 		sender = "X"
 	} else if player == g.O.String() {
 		sender = "O"
+	} else if !issystem {
+		return
 	}
 
 	text := types.Message{

@@ -9,6 +9,8 @@ import (
 	"github.com/ncmprbll/multiplayer-tic-tac-toe/api"
 )
 
+const APPLICATION_PORT = "1339"
+
 func main() {
 	r := chi.NewRouter()
 
@@ -21,11 +23,13 @@ func main() {
 	r.Handle("/js/*", mimes)
 
 	r.Get("/", api.RootHandler)
+
 	r.Post("/play", api.CreateGameHandler)
 	r.Get("/play", api.GetGameHandler)
 	r.Get("/play/{id:*}", api.GetGameHandler)
+
 	r.Get("/ws", api.WsHandler)
 	r.Get("/ws/{id:*}", api.WsHandler)
 
-	http.ListenAndServe(":1337", r)
+	http.ListenAndServe(":"+APPLICATION_PORT, r)
 }

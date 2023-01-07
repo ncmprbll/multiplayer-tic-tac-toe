@@ -198,13 +198,7 @@ func (g *Game) ConnectionUpdate(c *websocket.Conn) error {
 
 func (g *Game) Broadcast(msg types.Message) {
 	for _, c := range g.Conns {
-		err := c.WriteJSON(msg)
-
-		// Does it make any sense though? I think I was planning on handling an error here somehow
-		// I'll keep it this way for the time being
-		if err != nil {
-			continue
-		}
+		c.WriteJSON(msg)
 	}
 }
 

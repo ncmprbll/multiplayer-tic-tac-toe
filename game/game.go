@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -47,11 +48,16 @@ type Game struct {
 	Grid  Grid
 
 	Conns []*websocket.Conn
+	ConnsLock sync.Mutex
 
 	ChatLog []types.Message
 }
 
-var Games = make(map[string]*Game)
+var (
+	Games = make(map[string]*Game)
+	Locks = make(map[string]sync.Mutex)
+	GamesWLock = &sync.Mutex{}
+)
 
 func (g *Game) Place(x, y int, value uint8) error {
 	if x < 0 || x >= len(g.Grid) {
@@ -243,7 +249,9 @@ func (g *Game) Over() {
 		c.Close()
 	}
 
+	GamesWLock.Lock()
 	delete(Games, g.Id.String())
+	GamesWLock.Unlock()
 }
 
 func (g *Game) chatMessage(player string, message string, issystem bool) {

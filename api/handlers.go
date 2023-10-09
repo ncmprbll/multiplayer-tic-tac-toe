@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -16,7 +17,11 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 func CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 	g := game.NewGame()
 	id := g.Id.String()
+
+	game.GamesWLock.Lock()
 	game.Games[id] = &g
+	game.Locks[id] = sync.Mutex{}
+	game.GamesWLock.Unlock()
 
 	http.Redirect(w, r, "play/"+id, http.StatusSeeOther)
 }
@@ -31,6 +36,7 @@ func GetGameHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	lock := game.Locks[gameid]
 	pid := ""
 	cookie, err := r.Cookie(gameid + "_id")
 
@@ -38,6 +44,7 @@ func GetGameHandler(w http.ResponseWriter, r *http.Request) {
 		pid = cookie.Value
 	}
 
+	lock.Lock()
 	if (g.X == uuid.Nil || g.O == uuid.Nil) && pid != g.X.String() && pid != g.O.String() {
 		id := uuid.New()
 
@@ -76,6 +83,7 @@ func GetGameHandler(w http.ResponseWriter, r *http.Request) {
 		g.State = game.GAME_WAITING_FOR_X
 		g.SendSystemMessage("The game has begun")
 	}
+	lock.Unlock()
 
 	http.ServeFile(w, r, "web/game.html")
 }

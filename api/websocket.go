@@ -94,6 +94,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	lock := game.Locks[id]
 	player := r.URL.Query().Get("id")
 
 	if player == g.X.String() && !g.XAlive {
@@ -109,12 +110,14 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			return nil
 		}
 
+		lock.Lock()
 		if g.IsState(game.GAME_NOT_STARTED) {
 			g.X = uuid.Nil
 			g.XAlive = false
 			g.O = uuid.Nil
 			g.OAlive = false
 
+			lock.Unlock()
 			return nil
 		}
 
@@ -131,10 +134,14 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			g.Over()
 		}
 
+		lock.Unlock()
+
 		return nil
 	})
 
+	g.ConnsLock.Lock()
 	g.Conns = append(g.Conns, ws)
+	g.ConnsLock.Unlock()
 
 	g.ConnectionUpdate(ws)
 	g.BroadcastState()
